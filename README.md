@@ -2,6 +2,8 @@
 
 A lightweight Windows browser shell built with C++20, Win32, and Microsoft WebView2.
 
+The shell includes a retro Windows XP / early-Chromium visual style, Chromium rendering, multiple tabs, background tab unloading, address/search navigation, download status, system-theme-aware start page, and keyboard shortcuts: `Ctrl+T`, `Ctrl+W`, `Ctrl+Tab`, `Ctrl+L`, and `F5`.
+
 ## Build locally
 
 Install Visual Studio 2022 with the Desktop C++ workload, CMake, and the WebView2 Runtime. Download the `Microsoft.Web.WebView2` NuGet package and configure:
@@ -12,6 +14,8 @@ cmake --build build --config Release
 ```
 
 The executable and `ui` folder are placed in `build/Release`. The repository workflow builds the same package on GitHub Actions and uploads `AeroFind-windows-x64.zip`.
+
+The WebView2 Runtime must be installed on the target Windows machine. GitHub Actions provides the SDK and compiler, but it does not package the Evergreen Runtime itself.
 
 ## Resource target
 
