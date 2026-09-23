@@ -3,6 +3,10 @@
 #include <WebView2.h>
 #include "secure_store.h"
 
+#undef max
+#undef min
+
+#include <algorithm>
 #include <cstddef>
 #include <cwctype>
 #include <string>
@@ -126,8 +130,10 @@ void LayoutChrome() {
     }
     HWND newTab = GetDlgItem(g_window, kNewTabId);
     if (newTab) SetWindowPos(newTab, nullptr, 12 + static_cast<int>(g_tabs.size()) * 170, 5, 28, 25, SWP_NOZORDER);
-    if (g_address) SetWindowPos(g_address, nullptr, 172, kTabBarHeight + 9,
-        max(220, bounds.right - 300), 28, SWP_NOZORDER);
+    if (g_address) {
+        const int addressWidth = std::max(220, bounds.right - 300);
+        SetWindowPos(g_address, nullptr, 172, kTabBarHeight + 9, addressWidth, 28, SWP_NOZORDER);
+    }
     if (g_status) SetWindowPos(g_status, nullptr, 8, kToolbarHeight - 20, 160, 18, SWP_NOZORDER);
     ResizeBrowser();
 }
