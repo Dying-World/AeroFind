@@ -8,14 +8,14 @@ UIManager* UIManager::activeInstance_ = nullptr;
 
 bool UIManager::Create(HWND window, HINSTANCE) {
     window_ = window; activeInstance_ = this;
-    status_ = CreateWindowW(L"STATIC", L"Ready", WS_CHILD | WS_VISIBLE | SS_LEFT, 8, config::ToolbarHeight - 20, 160, 18, window, reinterpret_cast<HMENU>(config::StatusId), nullptr, nullptr);
-    CreateWindowW(L"BUTTON", L"<", WS_CHILD | WS_VISIBLE, 8, config::TabBarHeight + 9, 35, 28, window, reinterpret_cast<HMENU>(config::BackId), nullptr, nullptr);
-    CreateWindowW(L"BUTTON", L">", WS_CHILD | WS_VISIBLE, 48, config::TabBarHeight + 9, 35, 28, window, reinterpret_cast<HMENU>(config::ForwardId), nullptr, nullptr);
-    CreateWindowW(L"BUTTON", L"R", WS_CHILD | WS_VISIBLE, 88, config::TabBarHeight + 9, 35, 28, window, reinterpret_cast<HMENU>(config::ReloadId), nullptr, nullptr);
-    CreateWindowW(L"BUTTON", L"Home", WS_CHILD | WS_VISIBLE, 128, config::TabBarHeight + 9, 40, 28, window, reinterpret_cast<HMENU>(config::HomeId), nullptr, nullptr);
-    address_ = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", config::StartPage, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 172, config::TabBarHeight + 9, 600, 28, window, reinterpret_cast<HMENU>(config::AddressId), nullptr, nullptr);
+    status_ = CreateWindowW(L"STATIC", L"Ready", WS_CHILD | WS_VISIBLE | SS_LEFT, 8, config::ToolbarHeight - 20, 160, 18, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::StatusId)), nullptr, nullptr);
+    CreateWindowW(L"BUTTON", L"<", WS_CHILD | WS_VISIBLE, 8, config::TabBarHeight + 9, 35, 28, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::BackId)), nullptr, nullptr);
+    CreateWindowW(L"BUTTON", L">", WS_CHILD | WS_VISIBLE, 48, config::TabBarHeight + 9, 35, 28, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::ForwardId)), nullptr, nullptr);
+    CreateWindowW(L"BUTTON", L"R", WS_CHILD | WS_VISIBLE, 88, config::TabBarHeight + 9, 35, 28, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::ReloadId)), nullptr, nullptr);
+    CreateWindowW(L"BUTTON", L"Home", WS_CHILD | WS_VISIBLE, 128, config::TabBarHeight + 9, 40, 28, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::HomeId)), nullptr, nullptr);
+    address_ = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", config::StartPage, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, 172, config::TabBarHeight + 9, 600, 28, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::AddressId)), nullptr, nullptr);
     originalAddressProc_ = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(address_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(AddressProc)));
-    CreateWindowW(L"BUTTON", L"+", WS_CHILD | WS_VISIBLE, 185, 5, 28, 25, window, reinterpret_cast<HMENU>(config::NewTabId), nullptr, nullptr);
+    CreateWindowW(L"BUTTON", L"+", WS_CHILD | WS_VISIBLE, 185, 5, 28, 25, window, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::NewTabId)), nullptr, nullptr);
     return address_ != nullptr;
 }
 
@@ -38,7 +38,7 @@ void UIManager::Paint(HDC dc) const {
     FillRect(dc, &tabBounds, tabs); FillRect(dc, &toolbarBounds, toolbar); DeleteObject(tabs); DeleteObject(toolbar);
 }
 
-void UIManager::CreateTabButton(size_t index, const std::wstring& title) { CreateWindowW(L"BUTTON", title.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 8, 5, 162, 25, window_, reinterpret_cast<HMENU>(config::TabIdBase + static_cast<int>(index)), nullptr, nullptr); }
+void UIManager::CreateTabButton(size_t index, const std::wstring& title) { CreateWindowW(L"BUTTON", title.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 8, 5, 162, 25, window_, reinterpret_cast<HMENU>(static_cast<INT_PTR>(config::TabIdBase + static_cast<int>(index))), nullptr, nullptr); }
 void UIManager::SetStatus(const std::wstring& text) const { if (status_) SetWindowTextW(status_, text.c_str()); }
 void UIManager::SetAddress(const std::wstring& address) const { if (address_) SetWindowTextW(address_, address.c_str()); }
 std::wstring UIManager::Address() const { const int length = address_ ? GetWindowTextLengthW(address_) : 0; std::wstring value(length, L'\0'); if (address_) GetWindowTextW(address_, value.data(), length + 1); return value; }
