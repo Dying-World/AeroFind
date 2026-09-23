@@ -2,7 +2,9 @@
 
 A lightweight Windows browser shell built with C++20, Win32, and Microsoft WebView2.
 
-The shell includes a retro Windows XP / early-Chromium visual style, Chromium rendering, multiple tabs, background tab unloading, address/search navigation, download status, system-theme-aware start page, and keyboard shortcuts: `Ctrl+T`, `Ctrl+W`, `Ctrl+Tab`, `Ctrl+L`, and `F5`.
+The shell includes a retro Windows XP / early-Chromium visual style, Chromium rendering, multiple tabs, background tab unloading, Google/Bing search, address navigation, download status, system-theme-aware start page, a small ad-domain filter, and keyboard shortcuts: `Ctrl+T`, `Ctrl+W`, `Ctrl+Tab`, `Ctrl+L`, `Ctrl+H` (history), `Ctrl+J` (downloads), and `F5`.
+
+History and download records are stored in `%LOCALAPPDATA%\AeroFind\vault.bin` and protected with Windows DPAPI. WebView2 uses a persistent profile under `%LOCALAPPDATA%\AeroFind\WebView2`; Chromium/WebView2 protects its own cookies and site storage using the Windows user profile.
 
 ## Build locally
 
@@ -16,6 +18,10 @@ cmake --build build --config Release
 The executable and `ui` folder are placed in `build/Release`. The repository workflow builds the same package on GitHub Actions and uploads `AeroFind-windows-x64.zip`.
 
 The WebView2 Runtime must be installed on the target Windows machine. GitHub Actions provides the SDK and compiler, but it does not package the Evergreen Runtime itself.
+
+## Security boundaries
+
+The project does not copy passwords or authenticated cookies from Chrome, Edge, or Firefox. Those stores are protected by each browser and by Windows profile encryption; copying them would be unsafe and unreliable. A real VPN also requires a provider or a system tunnel and cannot be implemented by a browser shell alone. The included ad filter is intentionally a small baseline list, not a replacement for a full extension engine.
 
 ## Resource target
 

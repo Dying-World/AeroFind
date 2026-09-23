@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <wrl.h>
 #include <WebView2.h>
+#include "secure_store.h"
 
 #include <cstddef>
 #include <cwctype>
@@ -24,6 +25,8 @@ constexpr int kHomeId = 1005;
 constexpr int kNewTabId = 1006;
 constexpr int kStatusId = 1007;
 constexpr int kTabIdBase = 2000;
+constexpr int kHistoryHotKey = 6;
+constexpr int kDownloadsHotKey = 7;
 
 struct Tab {
     std::wstring url = kStartPage;
@@ -51,7 +54,48 @@ std::wstring MakeTarget(std::wstring input) {
     input = Trim(std::move(input));
     if (input.empty()) return kStartPage;
     if (input.find(L"://") != std::wstring::npos || input.rfind(L"about:", 0) == 0) return input;
-    return L"https://www.bing.com/search?q=" + input;
+    return L"https://www.google.com/search?q=" + input;
+}
+
+std::wstring UserDataFolder() {
+    wchar_t localAppData[MAX_PATH]{};
+    const DWORD length = GetEnvironmentVariableW(L"LOCALAPPDATA", localAppData, MAX_PATH);
+    std::wstring path = length ? localAppData : L".";
+    path += L"\\AeroFind\\WebView2";
+    CreateDirectoryW((path.substr(0, path.rfind(L'\\'))).c_str(), nullptr);
+    CreateDirectoryW(path.c_str(), nullptr);
+    return path;
+}
+
+bool IsBlockedHost(const std::wstring& uri) {
+    static constexpr const wchar_t* blocked[] = {
+        L"doubleclick.net", L"googlesyndication.com", L"adservice.google.com",
+        L"adnxs.com", L"adsrvr.org", L"scorecardresearch.com", L"2mdn.net"
+    };
+    for (const auto* host : blocked) if (uri.find(host) != std::wstring::npos) return true;
+    return false;
+}
+
+std::wstring EscapeHtml(const std::wstring& value) {
+    std::wstring escaped;
+    for (wchar_t character : value) {
+        if (character == L'&') escaped += L"&amp;";
+        else if (character == L'<') escaped += L"&lt;";
+        else if (character == L'>') escaped += L"&gt;";
+        else if (character == L'\"') escaped += L"&quot;";
+        else escaped += character;
+    }
+    return escaped;
+}
+
+void OpenSecureRecords(const std::wstring& category, const wchar_t* heading) {
+    if (!g_webview) return;
+    std::wstring html = L"<!doctype html><meta charset='utf-8'><title>AeroFind</title><style>body{font:14px Tahoma;background:#dce8f1;color:#19344a;padding:30px}main{max-width:900px;margin:auto;background:#f7fbfe;border:1px solid #7895aa;padding:24px}li{padding:8px;border-bottom:1px solid #c2d1dc;word-break:break-all}</style><main><h1>";
+    html += heading;
+    html += L"</h1><ul>";
+    for (const auto& record : aero::ReadSecureRecords(category)) html += L"<li>" + EscapeHtml(record) + L"</li>";
+    html += L"</ul></main>";
+    g_webview->NavigateToString(html.c_str());
 }
 
 void SetStatus(const wchar_t* text) {
@@ -139,6 +183,7 @@ void CreateActiveWebView() {
                             LPWSTR uri = nullptr;
                             if (SUCCEEDED(args->get_Uri(&uri)) && uri && tabIndex < g_tabs.size()) {
                                 g_tabs[tabIndex].url = uri;
+                                aero::SaveSecureRecord(L"history", uri);
                                 UpdateAddress();
                                 CoTaskMemFree(uri);
                             }
@@ -162,11 +207,37 @@ void CreateActiveWebView() {
                             return S_OK;
                         }).Get(), nullptr);
                 ComPtr<ICoreWebView2_4> webview4;
+                ComPtr<ICoreWebView2_2> webview2;
+                if (SUCCEEDED(g_webview.As(&webview2))) {
+                    webview2->AddWebResourceRequestedFilter(L"*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
+                    webview2->add_WebResourceRequested(
+                        Callback<ICoreWebView2WebResourceRequestedEventHandler>(
+                            [](ICoreWebView2*, ICoreWebView2WebResourceRequestedEventArgs* args) -> HRESULT {
+                                ComPtr<ICoreWebView2WebResourceRequest> request;
+                                LPWSTR rawUri = nullptr;
+                                if (FAILED(args->get_Request(&request)) || !request || FAILED(request->get_Uri(&rawUri)) || !rawUri) return S_OK;
+                                const std::wstring uri = rawUri;
+                                CoTaskMemFree(rawUri);
+                                if (!IsBlockedHost(uri)) return S_OK;
+                                ComPtr<ICoreWebView2WebResourceResponse> response;
+                                g_environment->CreateWebResourceResponse(nullptr, 204, L"Blocked", L"", &response);
+                                args->put_Response(response.Get());
+                                return S_OK;
+                            }).Get(), nullptr);
+                }
                 if (SUCCEEDED(g_webview.As(&webview4))) {
                     webview4->add_DownloadStarting(
                         Callback<ICoreWebView2DownloadStartingEventHandler>(
                             [](ICoreWebView2*, ICoreWebView2DownloadStartingEventArgs* args) -> HRESULT {
                                 args->put_Handled(FALSE);
+                                ComPtr<ICoreWebView2DownloadOperation> operation;
+                                if (SUCCEEDED(args->get_DownloadOperation(&operation)) && operation) {
+                                    LPWSTR uri = nullptr;
+                                    if (SUCCEEDED(operation->get_Uri(&uri)) && uri) {
+                                        aero::SaveSecureRecord(L"downloads", uri);
+                                        CoTaskMemFree(uri);
+                                    }
+                                }
                                 SetStatus(L"Download started");
                                 return S_OK;
                             }).Get(), nullptr);
@@ -244,7 +315,10 @@ LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lPa
         RegisterHotKey(window, 3, MOD_CONTROL | MOD_NOREPEAT, VK_TAB);
         RegisterHotKey(window, 4, MOD_CONTROL | MOD_NOREPEAT, 'L');
         RegisterHotKey(window, 5, MOD_NOREPEAT, VK_F5);
-        CreateCoreWebView2EnvironmentWithOptions(nullptr, nullptr, nullptr,
+        RegisterHotKey(window, kHistoryHotKey, MOD_CONTROL | MOD_NOREPEAT, 'H');
+        RegisterHotKey(window, kDownloadsHotKey, MOD_CONTROL | MOD_NOREPEAT, 'J');
+        const std::wstring userDataFolder = UserDataFolder();
+        CreateCoreWebView2EnvironmentWithOptions(nullptr, userDataFolder.c_str(), nullptr,
             Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
                 [](HRESULT result, ICoreWebView2Environment* environment) -> HRESULT {
                     if (FAILED(result) || !environment) return result;
@@ -291,9 +365,13 @@ LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lPa
             SetFocus(g_address);
             SendMessageW(g_address, EM_SETSEL, 0, -1);
         } else if (wParam == 5 && g_webview) g_webview->Reload();
+        else if (wParam == kHistoryHotKey) OpenSecureRecords(L"history", L"Browsing history");
+        else if (wParam == kDownloadsHotKey) OpenSecureRecords(L"downloads", L"Downloads");
         return 0;
     case WM_DESTROY:
         for (int id = 1; id <= 5; ++id) UnregisterHotKey(window, id);
+        UnregisterHotKey(window, kHistoryHotKey);
+        UnregisterHotKey(window, kDownloadsHotKey);
         DestroyActiveWebView();
         PostQuitMessage(0);
         return 0;

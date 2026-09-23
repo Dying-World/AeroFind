@@ -15,6 +15,7 @@
     .tagline { margin:0; color:var(--muted); font-size:14px; }
     form { display:flex; margin-top:24px; max-width:680px; padding:4px; border:1px solid #6f8ca3; background:#fff; box-shadow:inset 1px 1px 2px #9caebb; }
     input { flex:1; min-width:0; border:0; outline:0; padding:9px; color:var(--ink); font:14px Tahoma,Arial,sans-serif; }
+    select { border:1px solid #9aaebd; color:#163a57; background:#eef5fa; }
     button,.link { border:1px solid #567893; color:#163a57; background:linear-gradient(#fff,#b9d0e1); box-shadow:inset 1px 1px #fff; cursor:pointer; text-decoration:none; }
     form button { padding:0 20px; font-weight:bold; }
     .body { padding:20px 28px 28px; }
@@ -45,8 +46,9 @@
       <div class="brand">AeroFind Browser 1.0</div>
       <h1>Welcome to the web.</h1>
       <p class="tagline">A fast, quiet browser shell with a modern Chromium engine.</p>
-      <form action="https://www.bing.com/search" method="get">
+      <form id="search-form">
         <input name="q" autofocus autocomplete="off" placeholder="Search the web or enter an address">
+        <select id="engine" aria-label="Search engine"><option value="https://www.google.com/search?q=">Google</option><option value="https://www.bing.com/search?q=">Bing</option></select>
         <button type="submit">Search</button>
       </form>
     </header>
@@ -59,5 +61,12 @@
       </div>
     </section>
   </main>
+  <script>
+    document.getElementById('search-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const query = this.elements.q.value.trim();
+      if (query) window.location.href = document.getElementById('engine').value + encodeURIComponent(query);
+    });
+  </script>
 </body>
 </html>
