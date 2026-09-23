@@ -2,6 +2,22 @@
 
 A lightweight Windows browser shell built with C++20, Win32, and Microsoft WebView2.
 
+## Source layout
+
+The browser is split into focused modules rather than keeping all logic in one source file:
+
+```text
+src/
+	core/       BrowserApp, WebViewInstance, URL routing, application constants
+	ui/         Win32 controls, toolbar layout, tab buttons, painting
+	tabs/       Tab state and active-tab collection
+	network/    AdBlocker and DownloadManager
+	storage/    StorageManager facade over encrypted DPAPI records
+	utils/      String/path helpers and debug logging
+```
+
+The build contains 24 `.h`/`.cpp` files. The implementation stays compact on purpose; adding thousands of non-functional lines would make the browser harder to audit and maintain.
+
 The shell includes a retro Windows XP / early-Chromium visual style, Chromium rendering, multiple tabs, background tab unloading, Google/Bing search, address navigation, download status, system-theme-aware start page, a small ad-domain filter, and keyboard shortcuts: `Ctrl+T`, `Ctrl+W`, `Ctrl+Tab`, `Ctrl+L`, `Ctrl+H` (history), `Ctrl+J` (downloads), and `F5`.
 
 History and download records are stored in `%LOCALAPPDATA%\AeroFind\vault.bin` and protected with Windows DPAPI. WebView2 uses a persistent profile under `%LOCALAPPDATA%\AeroFind\WebView2`; Chromium/WebView2 protects its own cookies and site storage using the Windows user profile.

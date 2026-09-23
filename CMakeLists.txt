@@ -30,7 +30,20 @@ if(NOT EXISTS "${WEBVIEW2_INCLUDE_DIR}/WebView2.h" OR NOT EXISTS "${WEBVIEW2_LIB
     message(FATAL_ERROR "WebView2 headers or libraries were not found under ${WEBVIEW2_ROOT}.")
 endif()
 
-add_executable(AeroFind WIN32 src/main.cpp src/secure_store.cpp)
+add_executable(AeroFind WIN32
+    src/main.cpp
+    src/secure_store.cpp
+    src/core/BrowserApp.cpp
+    src/core/UrlUtils.cpp
+    src/core/WebViewInstance.cpp
+    src/utils/Logger.cpp
+    src/utils/StringUtils.cpp
+    src/tabs/TabManager.cpp
+    src/storage/StorageManager.cpp
+    src/network/AdBlocker.cpp
+    src/network/DownloadManager.cpp
+    src/ui/UIManager.cpp
+)
 target_include_directories(AeroFind PRIVATE "${WEBVIEW2_INCLUDE_DIR}")
 target_link_libraries(AeroFind PRIVATE "${WEBVIEW2_LIB}" user32 gdi32 ole32 oleaut32 shlwapi crypt32)
 target_compile_definitions(AeroFind PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
