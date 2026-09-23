@@ -1,0 +1,28 @@
+name: Build AeroFind
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install NuGet
+        uses: NuGet/setup-nuget@v2
+      - name: Download WebView2 SDK
+        shell: pwsh
+        run: nuget install Microsoft.Web.WebView2 -Version 1.0.2903.40 -OutputDirectory "$env:GITHUB_WORKSPACE/.deps"
+      - name: Configure
+        shell: pwsh
+        run: cmake -S . -B build -A x64 -DWEBVIEW2_ROOT="$env:GITHUB_WORKSPACE/.deps/Microsoft.Web.WebView2.1.0.2903.40"
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path build/Release/* -DestinationPath AeroFind-windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AeroFind-windows-x64
+          path: AeroFind-windows-x64.zip

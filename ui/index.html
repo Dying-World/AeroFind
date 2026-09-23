@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AeroFind</title>
+  <style>
+    :root { --ink:#132229; --muted:#60717a; --paper:#f4f7f2; --line:#d6dfdc; --accent:#d95f39; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(circle at 12% 5%, #fff 0 16%, transparent 38%), linear-gradient(135deg,#edf4f1,#f8f4e9); font-family:Georgia, 'Times New Roman', serif; }
+    main { width:min(1050px, calc(100% - 48px)); margin:0 auto; padding:64px 0 48px; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; }
+    .mark { font:700 14px/1.2 Arial,sans-serif; letter-spacing:2px; text-transform:uppercase; }
+    .signal { color:var(--accent); font:600 12px Arial,sans-serif; text-transform:uppercase; letter-spacing:1px; }
+    h1 { max-width:690px; margin:70px 0 18px; font-size:clamp(48px,8vw,94px); line-height:.9; font-weight:400; letter-spacing:-3px; }
+    .intro { max-width:520px; color:var(--muted); font:16px/1.6 Arial,sans-serif; }
+    form { display:flex; max-width:720px; margin:36px 0 48px; border-bottom:2px solid var(--ink); }
+    input { flex:1; min-width:0; border:0; outline:0; padding:16px 4px; background:transparent; color:var(--ink); font:20px Georgia,serif; }
+    button { border:0; background:var(--ink); color:white; padding:0 24px; font:700 12px Arial,sans-serif; letter-spacing:1px; text-transform:uppercase; cursor:pointer; }
+    section { border-top:1px solid var(--line); padding-top:20px; }
+    .section-head { display:flex; justify-content:space-between; margin-bottom:22px; font:700 11px Arial,sans-serif; letter-spacing:1.5px; text-transform:uppercase; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    article { min-height:145px; padding:20px; background:rgba(255,255,255,.57); border:1px solid var(--line); }
+    article small { color:var(--accent); font:700 11px Arial,sans-serif; }
+    article h2 { margin:22px 0 8px; font-size:22px; font-weight:400; }
+    article p { margin:0; color:var(--muted); font:13px/1.45 Arial,sans-serif; }
+    @media (max-width:650px) { main{width:calc(100% - 28px);padding-top:32px} h1{margin-top:58px;letter-spacing:-2px}.grid{grid-template-columns:1fr} form{margin-bottom:36px} }
+  </style>
+</head>
+<body>
+  <main>
+    <header><div class="mark">AeroFind / 01</div><div class="signal">Quiet browser for curious minds</div></header>
+    <h1>Find the useful<br>in the noise.</h1>
+    <p class="intro">A focused home for the web. Search quickly, keep your workspace calm, and let your tabs stay out of the way.</p>
+    <form action="https://www.bing.com/search" method="get"><input name="q" autofocus autocomplete="off" placeholder="Search the web or enter an address"><button type="submit">Search</button></form>
+    <section><div class="section-head"><span>Shortcuts</span><span>Built for flow</span></div><div class="grid">
+      <article><small>01 / Read</small><h2>Wikipedia</h2><p>Open a clean starting point for research.</p></article>
+      <article><small>02 / Make</small><h2>GitHub</h2><p>Keep your code and projects one click away.</p></article>
+      <article><small>03 / Watch</small><h2>Web tools</h2><p>Search, compare, and move on without clutter.</p></article>
+    </div></section>
+  </main>
+</body>
+</html>
