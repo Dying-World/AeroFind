@@ -3,6 +3,12 @@
 namespace aero::config {
 inline constexpr wchar_t WindowClass[] = L"AeroFindWindow";
 inline constexpr wchar_t StartPage[] = L"https://appassets.local/index.html";
+inline constexpr wchar_t SettingsPage[] = L"https://appassets.local/settings.html";
+inline constexpr wchar_t MediaPage[] = L"https://appassets.local/media.html";
+inline constexpr wchar_t HistoryPage[] = L"https://appassets.local/history.html";
+inline constexpr wchar_t DownloadsPage[] = L"https://appassets.local/downloads.html";
+inline constexpr wchar_t DefaultSearchEngine[] = L"https://www.google.com/search?q=";
+inline constexpr wchar_t AirRaidMapUrl[] = L"https://www.google.com/maps?q=%D0%B0%D0%B2%D1%96%D1%8F%D0%B9%D0%BD%D0%B8%D0%B9%20%D0%BA%D0%B0%D1%80%D1%82%D0%B0";
 inline constexpr int TabBarHeight = 34;
 inline constexpr int ToolbarHeight = 88;
 inline constexpr int AddressId = 1001;

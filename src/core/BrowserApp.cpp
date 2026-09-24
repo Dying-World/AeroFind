@@ -4,6 +4,8 @@
 #include "../utils/StringUtils.h"
 #include "../utils/Logger.h"
 
+#include <algorithm>
+
 using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
 
@@ -53,24 +55,100 @@ void BrowserApp::CreateActiveView() {
 }
 
 void BrowserApp::ResizeView() { if (!webView_.Controller()) return; RECT bounds{}; GetClientRect(window_, &bounds); RECT webBounds{0, config::ToolbarHeight, bounds.right, bounds.bottom}; webView_.Controller()->put_Bounds(webBounds); }
-void BrowserApp::NavigateFromAddress() { if (!webView_.Ready()) return; tabs_.Active().url = MakeNavigationTarget(ui_.Address()); webView_.View()->Navigate(tabs_.Active().url.c_str()); }
-void BrowserApp::NewTab() { const size_t index = tabs_.AddTab(); ui_.CreateTabButton(index, tabs_.At(index).title); SwitchTab(index); }
+void BrowserApp::NavigateFromAddress() { if (!webView_.Ready()) return; tabs_.Active().url = MakeNavigationTarget(ui_.Address()); webView_.View()->Navigate(tabs_.Active().url.c_str()); SaveSession(); }
+void BrowserApp::NewTab() { const size_t index = tabs_.AddTab(); ui_.CreateTabButton(index, tabs_.At(index).title); SaveSession(); SwitchTab(index); }
 
 void BrowserApp::CloseTab(size_t index) {
-    if (tabs_.Count() == 1) { tabs_.Active() = {config::StartPage, L"New tab", false}; if (webView_.Ready()) webView_.View()->Navigate(config::StartPage); return; }
-    const bool active = index == tabs_.ActiveIndex(); if (active) { ++generation_; webView_.Reset(); }
-    DestroyWindow(GetDlgItem(window_, config::TabIdBase + static_cast<int>(index))); tabs_.CloseTab(index); ui_.Layout(TabTitles()); if (active) CreateActiveView();
+    if (tabs_.Count() == 1) { tabs_.Active() = {config::StartPage, L"New tab", false}; if (webView_.Ready()) { webView_.Controller()->put_IsVisible(TRUE); webView_.View()->Navigate(config::StartPage); } SaveSession(); return; }
+    const bool active = index == tabs_.ActiveIndex();
+    if (active && webView_.Ready()) {
+        webView_.Controller()->put_IsVisible(FALSE);
+    }
+    DestroyWindow(GetDlgItem(window_, config::TabIdBase + static_cast<int>(index))); tabs_.CloseTab(index); ui_.Layout(TabTitles());
+    if (active) {
+        tabs_.Activate(std::min(tabs_.ActiveIndex(), tabs_.Count() - 1));
+        ui_.SetAddress(tabs_.Active().url);
+        if (webView_.Ready()) {
+            webView_.Controller()->put_IsVisible(TRUE);
+            if (!tabs_.Active().url.empty()) webView_.View()->Navigate(tabs_.Active().url.c_str());
+        } else {
+            CreateActiveView();
+        }
+    }
+    SaveSession();
 }
 
-void BrowserApp::SwitchTab(size_t index) { if (index >= tabs_.Count() || index == tabs_.ActiveIndex()) return; ++generation_; webView_.Reset(); tabs_.Activate(index); ui_.SetAddress(tabs_.Active().url); ui_.Layout(TabTitles()); CreateActiveView(); }
+void BrowserApp::SwitchTab(size_t index) {
+    if (index >= tabs_.Count() || index == tabs_.ActiveIndex()) return;
+    if (webView_.Ready()) {
+        webView_.Controller()->put_IsVisible(FALSE);
+    }
+    tabs_.Activate(index);
+    ui_.SetAddress(tabs_.Active().url);
+    ui_.Layout(TabTitles());
+    if (webView_.Ready()) {
+        webView_.Controller()->put_IsVisible(TRUE);
+        if (!tabs_.Active().url.empty()) webView_.View()->Navigate(tabs_.Active().url.c_str());
+    } else {
+        CreateActiveView();
+    }
+    SaveSession();
+}
 
 void BrowserApp::OpenRecords(const std::wstring& category, const wchar_t* heading) {
-    if (!webView_.Ready()) return; std::wstring html = L"<!doctype html><meta charset='utf-8'><style>body{font:14px Tahoma;background:#dce8f1;padding:30px}main{max-width:900px;margin:auto;background:#fff;border:1px solid #7895aa;padding:24px}li{padding:8px;border-bottom:1px solid #c2d1dc;word-break:break-all}</style><main><h1>";
-    html += heading; html += L"</h1><ul>"; for (const auto& value : storage_.Read(category)) html += L"<li>" + utils::EscapeHtml(value) + L"</li>"; html += L"</ul></main>"; webView_.View()->NavigateToString(html.c_str());
+    if (!webView_.Ready()) return;
+
+    const auto items = storage_.Read(category);
+    std::wstring html = L"<!doctype html><html><head><meta charset='utf-8'><style>body{font:14px Tahoma;background:linear-gradient(#edf5fb,#d4e3f2);padding:28px}main{max-width:980px;margin:0 auto;background:#fff;border:1px solid #a3bfd0;padding:26px;box-shadow:0 2px 0 rgba(31,58,80,.14)}h1{margin:0 0 18px;color:#1d4f7d}ul{padding-left:20px}li{padding:8px 0;border-bottom:1px solid #dfeaf2;word-break:break-word}a{color:#1d4f7d;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><main><h1>";
+    html += heading;
+    html += L"</h1><ul>";
+    for (const auto& value : items) {
+        std::wstring safe = utils::EscapeHtml(value);
+        const auto pos = safe.find(L"\t");
+        if (pos != std::wstring::npos) {
+            const std::wstring label = safe.substr(0, pos);
+            const std::wstring href = safe.substr(pos + 1);
+            html += L"<li><a href='" + utils::EscapeHtml(href) + L"'>" + utils::EscapeHtml(label.empty() ? href : label) + L"</a></li>";
+        } else {
+            html += L"<li><a href='" + safe + L"'>" + safe + L"</a></li>";
+        }
+    }
+    if (items.empty()) {
+        html += L"<li>No entries yet.</li>";
+    }
+    html += L"</ul></main></body></html>";
+    webView_.View()->NavigateToString(html.c_str());
 }
 
 void BrowserApp::SaveBookmark() { storage_.Add(L"bookmarks", tabs_.Active().title + L"\t" + tabs_.Active().url); ui_.SetStatus(L"Bookmark saved"); }
-void BrowserApp::OpenSettings() { if (webView_.Ready()) webView_.View()->NavigateToString(L"<h1 style='font:24px Tahoma;padding:30px'>AeroFind settings</h1><p style='font:14px Tahoma;padding:0 30px'>WebView2 profile, DPAPI storage, Google search, memory saver, and ad filtering are active.</p>"); }
+void BrowserApp::OpenHistoryPage() { if (webView_.Ready()) webView_.View()->Navigate(config::HistoryPage); }
+void BrowserApp::OpenDownloadsPage() { if (webView_.Ready()) webView_.View()->Navigate(config::DownloadsPage); }
+void BrowserApp::OpenMediaPage() { if (webView_.Ready()) webView_.View()->Navigate(config::MediaPage); }
+void BrowserApp::OpenSettings() {
+    if (webView_.Ready()) {
+        webView_.View()->Navigate(config::SettingsPage);
+    }
+}
+
+void BrowserApp::SaveSession() {
+    std::vector<std::wstring> entries;
+    for (size_t i = 0; i < tabs_.Count(); ++i) {
+        const auto& tab = tabs_.At(i);
+        entries.push_back(tab.title + L"\t" + tab.url);
+    }
+    storage_.Set(L"session", entries);
+}
+
+void BrowserApp::LoadSession() {
+    const auto sessionEntries = storage_.Read(L"session");
+    if (sessionEntries.empty()) {
+        tabs_.Clear();
+        tabs_.AddTab();
+        return;
+    }
+
+    tabs_.RestoreFromEntries(sessionEntries);
+}
 
 void BrowserApp::CreateMenu() {
     HMENU menu = ::CreateMenu(); HMENU file = CreatePopupMenu(); AppendMenuW(file, MF_STRING, config::MenuNewTab, L"New tab\tCtrl+T"); AppendMenuW(file, MF_STRING, config::MenuCloseTab, L"Close tab\tCtrl+W"); AppendMenuW(file, MF_STRING, config::MenuExit, L"Exit"); AppendMenuW(menu, MF_POPUP, reinterpret_cast<UINT_PTR>(file), L"&File");
@@ -92,12 +170,12 @@ LRESULT BrowserApp::HandleMessage(HWND window, UINT message, WPARAM wParam, LPAR
         RegisterHotKey(window, 3, MOD_CONTROL | MOD_NOREPEAT, VK_TAB); RegisterHotKey(window, 4, MOD_CONTROL | MOD_NOREPEAT, 'L');
         RegisterHotKey(window, 5, MOD_NOREPEAT, VK_F5); RegisterHotKey(window, 6, MOD_CONTROL | MOD_NOREPEAT, 'H');
         RegisterHotKey(window, 7, MOD_CONTROL | MOD_NOREPEAT, 'J'); RegisterHotKey(window, 8, MOD_CONTROL | MOD_NOREPEAT, 'D');
-        RegisterHotKey(window, 9, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'B'); StartEnvironment(); return 0;
+        RegisterHotKey(window, 9, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'B'); LoadSession(); StartEnvironment(); return 0;
     case WM_SIZE: ui_.Layout(TabTitles()); ResizeView(); return 0;
     case WM_PAINT: { PAINTSTRUCT paint{}; HDC dc = BeginPaint(window, &paint); ui_.Paint(dc); EndPaint(window, &paint); return 0; }
-    case WM_COMMAND: { const int id = LOWORD(wParam); if (id == config::BackId && webView_.Ready()) webView_.View()->GoBack(); else if (id == config::ForwardId && webView_.Ready()) webView_.View()->GoForward(); else if (id == config::ReloadId && webView_.Ready()) webView_.View()->Reload(); else if (id == config::HomeId && webView_.Ready()) webView_.View()->Navigate(config::StartPage); else if (id == config::NewTabId || id == config::MenuNewTab) NewTab(); else if (id == config::MenuCloseTab) CloseTab(tabs_.ActiveIndex()); else if (id == config::MenuExit) PostMessageW(window, WM_CLOSE, 0, 0); else if (id == config::MenuHistory) OpenRecords(L"history", L"Browsing history"); else if (id == config::MenuDownloads) OpenRecords(L"downloads", L"Downloads"); else if (id == config::MenuBookmark) SaveBookmark(); else if (id == config::MenuBookmarks) OpenRecords(L"bookmarks", L"Bookmarks"); else if (id == config::MenuSettings) OpenSettings(); else if (id >= config::TabIdBase && id < config::TabIdBase + static_cast<int>(tabs_.Count())) SwitchTab(id - config::TabIdBase); return 0; }
+    case WM_COMMAND: { const int id = LOWORD(wParam); if (id == config::BackId && webView_.Ready()) webView_.View()->GoBack(); else if (id == config::ForwardId && webView_.Ready()) webView_.View()->GoForward(); else if (id == config::ReloadId && webView_.Ready()) webView_.View()->Reload(); else if (id == config::HomeId && webView_.Ready()) webView_.View()->Navigate(config::StartPage); else if (id == config::NewTabId || id == config::MenuNewTab) NewTab(); else if (id == config::MenuCloseTab) CloseTab(tabs_.ActiveIndex()); else if (id == config::MenuExit) PostMessageW(window, WM_CLOSE, 0, 0); else if (id == config::MenuHistory) OpenHistoryPage(); else if (id == config::MenuDownloads) OpenDownloadsPage(); else if (id == config::MenuBookmark) SaveBookmark(); else if (id == config::MenuBookmarks) OpenRecords(L"bookmarks", L"Bookmarks"); else if (id == config::MenuSettings) OpenSettings(); else if (id == config::MenuAbout) OpenMediaPage(); else if (id >= config::TabIdBase && id < config::TabIdBase + static_cast<int>(tabs_.Count())) SwitchTab(id - config::TabIdBase); return 0; }
     case WM_HOTKEY: if (wParam == 1) NewTab(); else if (wParam == 2) CloseTab(tabs_.ActiveIndex()); else if (wParam == 3) SwitchTab((tabs_.ActiveIndex() + 1) % tabs_.Count()); else if (wParam == 4) { SetFocus(ui_.AddressControl()); SendMessageW(ui_.AddressControl(), EM_SETSEL, 0, -1); } else if (wParam == 5 && webView_.Ready()) webView_.View()->Reload(); else if (wParam == 6) OpenRecords(L"history", L"Browsing history"); else if (wParam == 7) OpenRecords(L"downloads", L"Downloads"); else if (wParam == 8) SaveBookmark(); else if (wParam == 9) OpenRecords(L"bookmarks", L"Bookmarks"); return 0;
-    case WM_DESTROY: for (int id = 1; id <= 9; ++id) UnregisterHotKey(window, id); webView_.Reset(); PostQuitMessage(0); return 0;
+    case WM_DESTROY: for (int id = 1; id <= 9; ++id) UnregisterHotKey(window, id); SaveSession(); webView_.Reset(); PostQuitMessage(0); return 0;
     default: return DefWindowProcW(window, message, wParam, lParam);
     }
 }

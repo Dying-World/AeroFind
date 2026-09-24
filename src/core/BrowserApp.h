@@ -19,7 +19,7 @@ public:
 private:
     void StartEnvironment(); void CreateActiveView(); void ResizeView(); void NavigateFromAddress();
     void NewTab(); void CloseTab(size_t index); void SwitchTab(size_t index); void OpenRecords(const std::wstring& category, const wchar_t* heading);
-    void SaveBookmark(); void OpenSettings(); void CreateMenu(); std::vector<std::wstring> TabTitles() const;
+    void OpenHistoryPage(); void OpenDownloadsPage(); void OpenMediaPage(); void SaveBookmark(); void OpenSettings(); void CreateMenu(); void SaveSession(); void LoadSession(); std::vector<std::wstring> TabTitles() const;
     static LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
     HINSTANCE instance_ = nullptr; HWND window_ = nullptr;
     Microsoft::WRL::ComPtr<ICoreWebView2Environment> environment_;

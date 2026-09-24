@@ -3,70 +3,194 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AeroFind New Tab</title>
+  <title>AeroFind 2016</title>
   <style>
-    :root { --ink:#192b3c; --muted:#566b7c; --panel:#e8f0f7; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; color:var(--ink); background:linear-gradient(#f9fcff 0 18%,#cbdce9 18% 100%); font:13px Tahoma,Arial,sans-serif; }
-    .page { width:min(960px,calc(100% - 32px)); margin:30px auto; border:1px solid #6f8ca3; background:var(--panel); box-shadow:inset 0 1px #fff,3px 4px 0 rgba(33,57,78,.22); }
-    .masthead { padding:22px 28px 26px; border-bottom:1px solid #a8bac8; background:linear-gradient(#fafdff,#d8e6f0); }
-    .brand { color:#174c7c; font:bold 15px Tahoma,Arial,sans-serif; letter-spacing:1px; text-transform:uppercase; }
-    h1 { margin:24px 0 8px; color:#1d5688; font:normal 42px Georgia,'Times New Roman',serif; text-shadow:1px 1px #fff; }
-    .tagline { margin:0; color:var(--muted); font-size:14px; }
-    form { display:flex; margin-top:24px; max-width:680px; padding:4px; border:1px solid #6f8ca3; background:#fff; box-shadow:inset 1px 1px 2px #9caebb; }
-    input { flex:1; min-width:0; border:0; outline:0; padding:9px; color:var(--ink); font:14px Tahoma,Arial,sans-serif; }
-    select { border:1px solid #9aaebd; color:#163a57; background:#eef5fa; }
-    button,.link { border:1px solid #567893; color:#163a57; background:linear-gradient(#fff,#b9d0e1); box-shadow:inset 1px 1px #fff; cursor:pointer; text-decoration:none; }
-    form button { padding:0 20px; font-weight:bold; }
-    .body { padding:20px 28px 28px; }
-    .bar { display:flex; justify-content:space-between; padding:6px 8px; color:#234b6c; border:1px solid #9bb0c1; background:linear-gradient(#eaf3f9,#c2d6e5); font-weight:bold; }
-    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:12px; }
-    .link { display:block; min-height:128px; padding:16px; }
-    .link:hover { background:linear-gradient(#fff,#d7e8f3); }
-    .link small { color:#3571a6; font-size:11px; }
-    .link h2 { margin:22px 0 8px; color:#1d5688; font:normal 21px Georgia,serif; }
-    .link p { margin:0; color:var(--muted); line-height:1.45; }
-    @media (prefers-color-scheme: dark) {
-      :root { --ink:#e1edf6; --muted:#aec0ce; --panel:#263b4d; }
-      body { background:linear-gradient(#182936,#1c2934); }
-      .page { border-color:#59778f; box-shadow:inset 0 1px #4f687b,3px 4px 0 rgba(0,0,0,.35); }
-      .masthead,.bar { background:linear-gradient(#38586e,#293f50); border-color:#55748b; }
-      h1,.brand,.link h2 { color:#b7dcf8; text-shadow:none; }
-      form { background:#dce8f0; }
-      input { background:#dce8f0; color:#152a3a; }
-      .link { color:#d9e8f4; background:linear-gradient(#39566a,#2b4353); border-color:#67859a; }
-      .link:hover { background:linear-gradient(#46677d,#344e61); }
+    :root {
+      --bg-1: #edf5fb;
+      --bg-2: #dfeaf5;
+      --header-1: #e7f0f8;
+      --header-2: #d1dde8;
+      --ink: #1d2d3b;
+      --muted: #4e6679;
+      --line: #9fb4c4;
+      --blue: #3d7ac1;
+      --panel: #f9fbfd;
     }
-    @media (max-width:650px) { .page { width:calc(100% - 16px); margin:8px auto; } .masthead,.body { padding-left:16px; padding-right:16px; } h1 { font-size:34px; } .grid { grid-template-columns:1fr; } }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Tahoma, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(#f5f9fd, #dfeaf2 18%, #d7e3ec 100%);
+    }
+    .chrome {
+      width: min(980px, calc(100% - 28px));
+      margin: 40px auto 0;
+      border: 1px solid var(--line);
+      background: linear-gradient(#f4f8fc, #dfeaf5);
+      box-shadow: inset 0 1px #fff, 0 2px 0 rgba(12, 45, 68, 0.15);
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(var(--header-1), var(--header-2));
+    }
+    .logo {
+      font-size: 12px;
+      letter-spacing: 1px;
+      font-weight: bold;
+      color: var(--blue);
+      text-transform: uppercase;
+    }
+    .search-wrap {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.08);
+      padding: 7px 10px;
+      max-width: 690px;
+    }
+    .search-wrap input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      font-size: 14px;
+      background: transparent;
+      color: var(--ink);
+    }
+    .search-wrap select, .toolbar button {
+      border: 1px solid var(--line);
+      background: linear-gradient(#fff, #e7eff7);
+      color: var(--ink);
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .content {
+      padding: 18px;
+    }
+    .hero {
+      background: linear-gradient(#fdfefe, #edf4fa);
+      border: 1px solid var(--line);
+      padding: 22px 20px 14px;
+    }
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 42px;
+      font-weight: normal;
+      letter-spacing: -1px;
+      color: #214c75;
+    }
+    .hero p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .card {
+      min-height: 150px;
+      text-decoration: none;
+      color: var(--ink);
+      display: block;
+      background: linear-gradient(#ffffff, #edf4fb);
+      border: 1px solid var(--line);
+      padding: 16px;
+      box-shadow: inset 0 1px #fff;
+    }
+    .card small {
+      display: block;
+      color: var(--blue);
+      font-size: 11px;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 24px;
+      font-weight: normal;
+      color: #1e517d;
+    }
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    @media (max-width: 760px) {
+      .chrome { width: calc(100% - 18px); margin-top: 12px; }
+      .toolbar { flex-wrap: wrap; }
+      .search-wrap { max-width: none; width: 100%; }
+      .cards { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 32px; }
+    }
   </style>
 </head>
 <body>
-  <main class="page">
-    <header class="masthead">
-      <div class="brand">AeroFind Browser 1.0</div>
-      <h1>Welcome to the web.</h1>
-      <p class="tagline">A fast, quiet browser shell with a modern Chromium engine.</p>
-      <form id="search-form">
-        <input name="q" autofocus autocomplete="off" placeholder="Search the web or enter an address">
-        <select id="engine" aria-label="Search engine"><option value="https://www.google.com/search?q=">Google</option><option value="https://www.bing.com/search?q=">Bing</option></select>
-        <button type="submit">Search</button>
-      </form>
-    </header>
-    <section class="body">
-      <div class="bar"><span>Quick links</span><span>Classic mode</span></div>
-      <div class="grid">
-        <a class="link" href="https://www.wikipedia.org/"><small>READ / 01</small><h2>Wikipedia</h2><p>Start a focused research session.</p></a>
-        <a class="link" href="https://github.com/"><small>MAKE / 02</small><h2>GitHub</h2><p>Open projects and code without clutter.</p></a>
-        <a class="link" href="https://www.bing.com/"><small>SEARCH / 03</small><h2>Web search</h2><p>Find the next useful thing quickly.</p></a>
+  <main class="chrome">
+    <div class="toolbar">
+      <div class="logo">AeroFind</div>
+      <div class="search-wrap">
+        <input id="q" type="text" placeholder="Search the web or type a site" autocomplete="off">
+        <select id="engine" aria-label="Search engine">
+          <option value="https://www.google.com/search?q=">Google</option>
+          <option value="https://www.bing.com/search?q=">Bing</option>
+        </select>
+        <button id="go" type="button">Search</button>
       </div>
-    </section>
+    </div>
+
+    <div class="content">
+      <div class="hero">
+        <h1>Welcome to the web.</h1>
+        <p>A lighter browser shell with a classic 2016-era search experience and fast Chromium rendering.</p>
+      </div>
+
+      <div class="cards">
+        <a class="card" href="https://www.google.com/maps?q=%D0%B0%D0%B2%D1%96%D0%B9%D0%BD%D0%BD%D0%B8%D0%B9%20%D0%BA%D0%B0%D1%80%D1%82%D0%B0">
+          <small>status</small>
+          <h2>Air map</h2>
+          <p>Emergency safety view and alerts.</p>
+        </a>
+        <a class="card" href="https://github.com/">
+          <small>code</small>
+          <h2>GitHub</h2>
+          <p>Open repositories and projects fast.</p>
+        </a>
+        <a class="card" href="https://www.wikipedia.org/">
+          <small>read</small>
+          <h2>Wikipedia</h2>
+          <p>Read and research with a clean layout.</p>
+        </a>
+      </div>
+    </div>
   </main>
+
   <script>
-    document.getElementById('search-form').addEventListener('submit', function (event) {
-      event.preventDefault();
-      const query = this.elements.q.value.trim();
-      if (query) window.location.href = document.getElementById('engine').value + encodeURIComponent(query);
+    const input = document.getElementById('q');
+    const engine = document.getElementById('engine');
+    const go = document.getElementById('go');
+
+    const runSearch = () => {
+      const query = input.value.trim();
+      if (!query) return;
+      window.location.href = engine.value + encodeURIComponent(query);
+    };
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') runSearch();
     });
+    go.addEventListener('click', runSearch);
   </script>
 </body>
 </html>

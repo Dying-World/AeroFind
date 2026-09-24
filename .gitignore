@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+out/
+Release/
+Debug/
+*.exe
+*.dll
+*.lib
+*.pdb
+*.obj
+*.ilk
+*.aps
+*.log
+
+# Dependency downloads
+.deps/
+.vcpkg/
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# GitHub release staging
+AeroFind-*.zip

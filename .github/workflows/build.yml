@@ -2,6 +2,8 @@ name: Build AeroFind
 
 on:
   push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
 
 jobs:
@@ -9,20 +11,44 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
+
       - name: Install NuGet
         uses: NuGet/setup-nuget@v2
+
       - name: Download WebView2 SDK
         shell: pwsh
         run: nuget install Microsoft.Web.WebView2 -Version 1.0.2903.40 -OutputDirectory "$env:GITHUB_WORKSPACE/.deps"
+
       - name: Configure
         shell: pwsh
         run: cmake -S . -B build -A x64 -DWEBVIEW2_ROOT="$env:GITHUB_WORKSPACE/.deps/Microsoft.Web.WebView2.1.0.2903.40"
+
       - name: Build
         run: cmake --build build --config Release --parallel
+
       - name: Package
         shell: pwsh
-        run: Compress-Archive -Path build/Release/* -DestinationPath AeroFind-windows-x64.zip
-      - uses: actions/upload-artifact@v4
+        run: |
+          $root = Join-Path $env:GITHUB_WORKSPACE 'build/Release'
+          $zip = Join-Path $env:GITHUB_WORKSPACE 'AeroFind-windows-x64.zip'
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          $items = @(
+            (Join-Path $root 'AeroFind.exe'),
+            (Join-Path $root 'WebView2Loader.dll'),
+            (Join-Path $root 'ui')
+          )
+          Compress-Archive -Path $items -DestinationPath $zip -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: AeroFind-windows-x64
           path: AeroFind-windows-x64.zip
+
+      - name: Publish release on tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AeroFind-windows-x64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

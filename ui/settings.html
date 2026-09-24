@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AeroFind Settings</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-2: #121b2f;
+      --panel: rgba(17, 24, 39, 0.72);
+      --panel-soft: rgba(255,255,255,0.07);
+      --line: rgba(148, 163, 184, 0.24);
+      --text: #e5ecf8;
+      --muted: #9bb0c9;
+      --accent: #7dd3fc;
+      --accent-strong: #60a5fa;
+      --success: #34d399;
+      --shadow: 0 24px 80px rgba(15, 23, 42, 0.55);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.28), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(125, 211, 252, 0.16), transparent 25%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
+      color: var(--text);
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .shell {
+      width: min(1200px, 100%);
+      min-height: 760px;
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.68);
+      border-radius: 28px;
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text);
+      font-size: 12px;
+    }
+    .brand-mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 0 18px rgba(125, 211, 252, 0.8);
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .chip {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      min-height: 700px;
+    }
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(148, 163, 184, 0.04);
+      padding: 24px 18px;
+    }
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      color: var(--text);
+      text-decoration: none;
+      background: transparent;
+      transition: .2s ease;
+    }
+    .nav-item.active,
+    .nav-item:hover {
+      background: rgba(125, 211, 252, 0.12);
+      border-color: rgba(125, 211, 252, 0.22);
+    }
+    .content {
+      padding: 28px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      backdrop-filter: blur(12px);
+    }
+    .panel + .panel { margin-top: 18px; }
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    .subtitle { margin: 0 0 18px; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 18px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .label {
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    input, select, button {
+      font: inherit;
+    }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: rgba(125, 211, 252, 0.7);
+      box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.14);
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .btn {
+      padding: 11px 18px;
+      border: 1px solid rgba(125, 211, 252, 0.28);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(125, 211, 252, 0.18), rgba(96, 165, 250, 0.24));
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(96, 165, 250, 0.2);
+    }
+    .btn.secondary {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--line);
+    }
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0 10px;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      background: linear-gradient(135deg, rgba(125,211,252,.3), rgba(96,165,250,.26));
+      border: 1px solid rgba(125,211,252,.35);
+      color: white;
+    }
+    .profile-name { font-weight: 700; font-size: 18px; }
+    .profile-meta { color: var(--muted); font-size: 13px; }
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(148,163,184,0.12);
+    }
+    .switch-row:last-child { border-bottom: 0; }
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+    }
+    .switch::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 6px;
+      top: 4px;
+      border-radius: 50%;
+      background: white;
+      transition: .2s ease;
+    }
+    .switch.on {
+      background: linear-gradient(135deg, rgba(52,211,153,.4), rgba(16,185,129,.5));
+      border-color: rgba(52,211,153,.5);
+    }
+    .switch.on::after { left: 24px; }
+    .status-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(52,211,153,0.08);
+      border: 1px solid rgba(52,211,153,0.2);
+      color: #d7fff0;
+      min-height: 46px;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 620px) {
+      body { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .content { padding: 18px; }
+      .topbar { padding: 14px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand"><span class="brand-mark"></span> AeroFind</div>
+      <div class="header-actions">
+        <span class="chip">Sync</span>
+        <span class="chip">Privacy</span>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark"></span> Settings</div>
+        <nav class="nav">
+          <a class="nav-item active" href="#">Profile</a>
+          <a class="nav-item" href="#">Search</a>
+          <a class="nav-item" href="#">Appearance</a>
+          <a class="nav-item" href="#">Privacy</a>
+          <a class="nav-item" href="#">Import</a>
+        </nav>
+      </aside>
+
+      <section class="content">
+        <div class="panel">
+          <h1 class="title">Account</h1>
+          <p class="subtitle">Sign in once and keep your settings, profile, and imported bookmarks synced locally.</p>
+
+          <div class="profile-card">
+            <div class="avatar" id="avatar">A</div>
+            <div>
+              <div class="profile-name" id="profile-name">Guest</div>
+              <div class="profile-meta" id="profile-email">Not signed in</div>
+            </div>
+          </div>
+
+          <div class="grid" style="margin-top: 18px;">
+            <div class="field">
+              <label class="label" for="name">Display name</label>
+              <input id="name" type="text" placeholder="Your name">
+            </div>
+            <div class="field">
+              <label class="label" for="email">Email</label>
+              <input id="email" type="email" placeholder="you@example.com">
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn" id="sign-in">Sign in</button>
+            <button class="btn secondary" id="sign-out">Sign out</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="title" style="font-size: 22px;">Preferences</h2>
+          <div class="switch-row">
+            <div>
+              <strong>History</strong>
+              <div class="profile-meta">Keep browsing history locally</div>
+            </div>
+            <div class="switch on" id="history-switch"></div>
+          </div>
+          <div class="switch-row">
+            <div>
+              <strong>Downloads</strong>
+              <div class="profile-meta">Save downloaded items in vault</div>
+            </div>
+            <div class="switch on" id="downloads-switch"></div>
+          </div>
+          <div class="switch-row">
+            <div>
+              <strong>Save tabs</strong>
+              <div class="profile-meta">Restore session after restart</div>
+            </div>
+            <div class="switch on" id="tabs-switch"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="title" style="font-size: 22px;">Import</h2>
+          <p class="subtitle">Import bookmarks and history from Chrome or a local JSON export.</p>
+          <input id="import-file" type="file" accept=".json,.html,.txt" style="padding: 10px;">
+          <div class="button-row">
+            <button class="btn" id="import-data">Import from Chrome</button>
+            <button class="btn secondary" id="open-map">Air raid map</button>
+          </div>
+          <div id="status" class="status-box">Ready.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const state = JSON.parse(localStorage.getItem('aerofind.account') || '{"name":"Guest","email":"Not signed in","signedIn":false}');
+    const setStatus = (text) => {
+      document.getElementById('status').textContent = text;
+    };
+
+    const renderProfile = () => {
+      const name = state.name || 'Guest';
+      const email = state.email || 'Not signed in';
+      document.getElementById('profile-name').textContent = state.signedIn ? name : 'Guest';
+      document.getElementById('profile-email').textContent = state.signedIn ? email : 'Not signed in';
+      document.getElementById('name').value = name;
+      document.getElementById('email').value = email;
+      document.getElementById('avatar').textContent = (state.signedIn ? name : 'G').charAt(0).toUpperCase();
+    };
+
+    document.getElementById('sign-in').addEventListener('click', () => {
+      state.name = document.getElementById('name').value || 'Guest';
+      state.email = document.getElementById('email').value || 'guest@example.com';
+      state.signedIn = true;
+      localStorage.setItem('aerofind.account', JSON.stringify(state));
+      renderProfile();
+      setStatus('Account saved locally.');
+    });
+
+    document.getElementById('sign-out').addEventListener('click', () => {
+      state.name = 'Guest';
+      state.email = 'Not signed in';
+      state.signedIn = false;
+      localStorage.setItem('aerofind.account', JSON.stringify(state));
+      renderProfile();
+      setStatus('Signed out.');
+    });
+
+    document.getElementById('import-data').addEventListener('click', async () => {
+      const input = document.getElementById('import-file');
+      if (!input.files || !input.files[0]) {
+        setStatus('Choose a Chrome export or JSON file first.');
+        return;
+      }
+
+      const file = input.files[0];
+      const text = await file.text();
+      let imported = [];
+
+      try {
+        const json = JSON.parse(text);
+        if (Array.isArray(json)) imported = json;
+        else if (json.bookmarks) imported = json.bookmarks;
+        else if (json.roots) imported = Object.values(json.roots).flatMap((v) => v.children || []);
+      } catch {
+        const matches = [...text.matchAll(/https?:\/\/[^\s"'<>]+/g)].map((m) => m[0]);
+        imported = matches;
+      }
+
+      localStorage.setItem('aerofind.imported', JSON.stringify(imported.slice(0, 200)));
+      setStatus('Import complete: ' + imported.length + ' links saved.');
+    });
+
+    document.getElementById('open-map').addEventListener('click', () => {
+      window.location.href = 'https://www.google.com/maps?q=%D0%B0%D0%B2%D1%96%D0%B9%D0%BD%D0%BD%D0%B8%D0%B9%20%D0%BA%D0%B0%D1%80%D1%82%D0%B0';
+    });
+
+    document.getElementById('history-switch').addEventListener('click', () => {
+      document.getElementById('history-switch').classList.toggle('on');
+    });
+
+    document.getElementById('downloads-switch').addEventListener('click', () => {
+      document.getElementById('downloads-switch').classList.toggle('on');
+    });
+
+    document.getElementById('tabs-switch').addEventListener('click', () => {
+      document.getElementById('tabs-switch').classList.toggle('on');
+    });
+
+    renderProfile();
+  </script>
+</body>
+</html>

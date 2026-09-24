@@ -61,9 +61,26 @@ std::string ReadVault() {
 
 namespace aero {
 bool SaveSecureRecord(const std::wstring& category, const std::wstring& value) {
+    std::vector<std::wstring> values = ReadSecureRecords(category);
+    values.push_back(value);
+    return SaveSecureRecords(category, values);
+}
+
+bool SaveSecureRecords(const std::wstring& category, const std::vector<std::wstring>& values) {
     std::string plain = ReadVault();
-    plain += ToUtf8(category) + "\t" + ToUtf8(value) + "\n";
-    const std::string encrypted = Protect(plain);
+    std::istringstream previousLines(plain);
+    std::string line;
+    const std::string prefix = ToUtf8(category) + "\t";
+    std::string filtered;
+    while (std::getline(previousLines, line)) {
+        if (line.rfind(prefix, 0) != 0) filtered += line + "\n";
+    }
+
+    for (const auto& value : values) {
+        filtered += prefix + ToUtf8(value) + "\n";
+    }
+
+    const std::string encrypted = Protect(filtered);
     if (encrypted.empty()) return false;
     std::ofstream file(VaultPath(), std::ios::binary | std::ios::trunc);
     file.write(encrypted.data(), static_cast<std::streamsize>(encrypted.size()));
