@@ -47,6 +47,9 @@ add_executable(AeroFind WIN32
 target_include_directories(AeroFind PRIVATE "${WEBVIEW2_INCLUDE_DIR}")
 target_link_libraries(AeroFind PRIVATE "${WEBVIEW2_LIB}" user32 gdi32 ole32 oleaut32 shlwapi crypt32 uxtheme)
 target_compile_definitions(AeroFind PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
+if(MSVC)
+    target_compile_options(AeroFind PRIVATE /utf-8)
+endif()
 
 add_custom_command(TARGET AeroFind POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${WEBVIEW2_DLL}" "$<TARGET_FILE_DIR:AeroFind>"
