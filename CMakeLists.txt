@@ -45,7 +45,7 @@ add_executable(AeroFind WIN32
     src/ui/UIManager.cpp
 )
 target_include_directories(AeroFind PRIVATE "${WEBVIEW2_INCLUDE_DIR}")
-target_link_libraries(AeroFind PRIVATE "${WEBVIEW2_LIB}" user32 gdi32 ole32 oleaut32 shlwapi crypt32)
+target_link_libraries(AeroFind PRIVATE "${WEBVIEW2_LIB}" user32 gdi32 ole32 oleaut32 shlwapi crypt32 uxtheme)
 target_compile_definitions(AeroFind PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
 
 add_custom_command(TARGET AeroFind POST_BUILD

@@ -2,6 +2,7 @@
 #include "../core/AppConfig.h"
 #include <algorithm>
 #include <utility>
+#include <uxtheme.h>
 
 namespace aero::ui {
 UIManager* UIManager::activeInstance_ = nullptr;
