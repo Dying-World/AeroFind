@@ -16,6 +16,7 @@ public:
     std::wstring Address() const;
     HWND AddressControl() const noexcept;
     void SetAddressEnterHandler(std::function<void()> handler);
+    void SetToolbarVisible(bool visible);
 private:
     static LRESULT CALLBACK AddressProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
     HWND window_ = nullptr;

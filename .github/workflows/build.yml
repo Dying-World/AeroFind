@@ -30,6 +30,11 @@ jobs:
         shell: pwsh
         run: |
           $root = Join-Path $env:GITHUB_WORKSPACE 'build/Release'
+          $required = @('AeroFind.exe', 'WebView2Loader.dll', 'ui/index.html', 'ui/settings.html')
+          foreach ($relative in $required) {
+            $path = Join-Path $root $relative
+            if (-not (Test-Path $path)) { throw "Missing release file: $relative" }
+          }
           $zip = Join-Path $env:GITHUB_WORKSPACE 'AeroFind-windows-x64.zip'
           if (Test-Path $zip) { Remove-Item $zip -Force }
           $items = @(

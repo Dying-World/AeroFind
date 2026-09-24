@@ -19,11 +19,11 @@ public:
 private:
     void StartEnvironment(); void CreateActiveView(); void ResizeView(); void NavigateFromAddress();
     void NewTab(); void CloseTab(size_t index); void SwitchTab(size_t index); void OpenRecords(const std::wstring& category, const wchar_t* heading);
-    void OpenHistoryPage(); void OpenDownloadsPage(); void OpenMediaPage(); void SaveBookmark(); void OpenSettings(); void CreateMenu(); void SaveSession(); void LoadSession(); std::vector<std::wstring> TabTitles() const;
+    void OpenHistoryPage(); void OpenDownloadsPage(); void OpenMediaPage(); void SaveBookmark(); void OpenSettings(); void ViewSource(); void OpenDevTools(); void ToggleFocusMode(); void CreateMenu(); void SaveSession(); void LoadSession(); std::vector<std::wstring> TabTitles() const;
     static LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
     HINSTANCE instance_ = nullptr; HWND window_ = nullptr;
     Microsoft::WRL::ComPtr<ICoreWebView2Environment> environment_;
     WebViewInstance webView_; tabs::TabManager tabs_; ui::UIManager ui_; storage::StorageManager storage_;
-    network::AdBlocker adBlocker_; network::DownloadManager downloads_; unsigned long generation_ = 0;
+    network::AdBlocker adBlocker_; network::DownloadManager downloads_; unsigned long generation_ = 0; bool focusMode_ = false;
 };
 }
