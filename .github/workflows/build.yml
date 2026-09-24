@@ -10,10 +10,10 @@ jobs:
   windows:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install NuGet
-        uses: NuGet/setup-nuget@v2
+        uses: NuGet/setup-nuget@v4
 
       - name: Download WebView2 SDK
         shell: pwsh
@@ -21,10 +21,23 @@ jobs:
 
       - name: Configure
         shell: pwsh
-        run: cmake -S . -B build -A x64 -DWEBVIEW2_ROOT="$env:GITHUB_WORKSPACE/.deps/Microsoft.Web.WebView2.1.0.2903.40"
+        run: |
+          $sdk = Get-ChildItem -Path "$env:GITHUB_WORKSPACE/.deps" -Directory -Filter 'Microsoft.Web.WebView2.*' | Select-Object -First 1
+          if (-not $sdk) { throw 'WebView2 SDK package was not downloaded.' }
+          Write-Host "Using WebView2 SDK: $($sdk.FullName)"
+          cmake -S . -B build -A x64 -DWEBVIEW2_ROOT="$($sdk.FullName)"
 
       - name: Build
-        run: cmake --build build --config Release --parallel
+        shell: pwsh
+        run: cmake --build build --config Release --parallel -- /v:minimal
+
+      - name: Show build diagnostics on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host 'Build failed. CMake files:'
+          Get-ChildItem -Path build -Recurse -Include '*.log','*.tlog' -ErrorAction SilentlyContinue | Select-Object -First 20 -ExpandProperty FullName
+          cmake --build build --config Release --verbose
 
       - name: Package
         shell: pwsh
